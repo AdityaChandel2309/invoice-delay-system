@@ -1,0 +1,70 @@
+"use client";
+
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Zap, ArrowLeft } from "lucide-react";
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex">
+      {/* Left Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/10 via-background to-purple-500/10 items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 grid-pattern" />
+        <div className="relative text-center max-w-md">
+          <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-2xl shadow-primary/30 mx-auto mb-8">
+            <Zap className="h-8 w-8 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold mb-4">Welcome back to<br /><span className="gradient-text">DelayIQ</span></h2>
+          <p className="text-muted-foreground">Predict invoice payment delays with AI. Protect your cash flow.</p>
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
+          <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Back to home
+          </Link>
+          <h1 className="text-2xl font-bold mb-1">Sign in</h1>
+          <p className="text-sm text-muted-foreground mb-8">Enter your credentials to access your dashboard.</p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Email</label>
+              <Input type="email" placeholder="you@company.com" />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Password</label>
+              <Input type="password" placeholder="••••••••" />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" className="rounded border-zinc-700" />
+                Remember me
+              </label>
+              <Link href="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
+            </div>
+            <Link href="/dashboard"><Button className="w-full" size="lg">Sign in</Button></Link>
+          </div>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+            <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">or continue with</span></div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" className="w-full">Google</Button>
+            <Button variant="outline" className="w-full">Microsoft</Button>
+          </div>
+
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="text-primary hover:underline font-medium">Sign up</Link>
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
