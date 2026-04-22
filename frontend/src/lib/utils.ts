@@ -30,34 +30,38 @@ export function formatDate(date: string | Date): string {
   }).format(new Date(date));
 }
 
+/** Risk tier → Tailwind text color using semantic tokens */
 export function getRiskColor(tier: string): string {
   switch (tier) {
-    case "CRITICAL": return "text-red-400";
-    case "HIGH": return "text-orange-400";
-    case "MEDIUM": return "text-yellow-400";
-    case "LOW": return "text-emerald-400";
-    default: return "text-zinc-400";
+    case "CRITICAL": return "text-status-danger";
+    case "HIGH": return "text-status-danger";
+    case "MEDIUM": return "text-status-warning";
+    case "LOW": return "text-status-healthy";
+    default: return "text-muted-foreground";
   }
 }
 
+/** Risk tier → Tailwind bg + border using semantic tokens */
 export function getRiskBg(tier: string): string {
   switch (tier) {
-    case "CRITICAL": return "bg-red-500/10 border-red-500/20";
-    case "HIGH": return "bg-orange-500/10 border-orange-500/20";
-    case "MEDIUM": return "bg-yellow-500/10 border-yellow-500/20";
-    case "LOW": return "bg-emerald-500/10 border-emerald-500/20";
-    default: return "bg-zinc-500/10 border-zinc-500/20";
+    case "CRITICAL": return "bg-metric-danger-bg border-status-danger/20";
+    case "HIGH": return "bg-metric-danger-bg border-status-danger/20";
+    case "MEDIUM": return "bg-metric-warning-bg border-status-warning/20";
+    case "LOW": return "bg-metric-healthy-bg border-status-healthy/20";
+    default: return "bg-muted border-border";
   }
 }
 
+/** Invoice status → Tailwind classes using semantic tokens */
 export function getStatusColor(status: string): string {
   switch (status) {
-    case "paid": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    case "overdue": return "bg-red-500/10 text-red-400 border-red-500/20";
-    case "issued": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-    case "partially_paid": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-    case "draft": return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
-    case "cancelled": return "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
-    default: return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
+    case "paid": return "text-status-healthy";
+    case "overdue": return "text-status-danger";
+    case "issued": return "text-status-warning";
+    case "pending": return "text-status-warning";
+    case "partially_paid": return "text-status-warning";
+    case "draft": return "text-muted-foreground";
+    case "cancelled": return "text-muted-foreground/50";
+    default: return "text-muted-foreground";
   }
 }
