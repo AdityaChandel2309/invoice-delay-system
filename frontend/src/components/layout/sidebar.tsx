@@ -1,131 +1,90 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, FileText, Users, Brain, BarChart3, Settings, CreditCard, ChevronRight, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Brain,
-  Settings,
-  CreditCard,
-  Zap,
-} from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Customers", href: "/dashboard/customers", icon: Users },
-  { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
-  { label: "Predictions", href: "/dashboard/predictions", icon: Brain },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
-  { label: "Billing", href: "/dashboard/billing", icon: CreditCard },
+interface NavItem { label: string; href: string; icon: React.ComponentType<{ className?: string }>; }
+interface NavGroup { label: string; items: NavItem[]; }
+
+const navGroups: NavGroup[] = [
+  {
+    label: "Operations",
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
+      { label: "Customers", href: "/dashboard/customers", icon: Users },
+      { label: "Predictions", href: "/dashboard/predictions", icon: Brain },
+    ],
+  },
+  {
+    label: "Intelligence",
+    items: [{ label: "Reports", href: "/dashboard/billing", icon: BarChart3 }],
+  },
+  {
+    label: "Admin",
+    items: [
+      { label: "Settings", href: "/dashboard/settings", icon: Settings },
+    ],
+  },
 ];
 
-export function Sidebar() {
+interface SidebarProps { onNavigate?: () => void; }
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const isActive = (href: string) => pathname === href;
+  const toggleGroup = (label: string) => setCollapsed((p) => ({ ...p, [label]: !p[label] }));
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-black flex flex-col">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-          <Zap className="h-4 w-4 text-white" />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold tracking-tight">DelayIQ</span>
-          <span className="font-mono text-[10px] text-primary border border-primary/30 px-1.5 py-0.5 rounded">PRO</span>
-        </div>
+    <nav className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      <div className="flex h-14 items-center gap-2 px-5">
+        <Zap className="h-5 w-5 text-sidebar-primary" />
+        <span className="text-lg font-semibold tracking-tight text-sidebar-primary-foreground">
+          DelayIQ
+        </span>
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 space-y-0.5 px-3 py-5 overflow-y-auto">
-        <div className="mb-3 px-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">
-          Main
-        </div>
-        {navItems.slice(0, 4).map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+      <div className="flex-1 overflow-y-auto px-3 py-2">
+        {navGroups.map((group, idx) => {
+          const isCollapsed = collapsed[group.label] ?? false;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-all duration-200",
-                isActive
-                  ? "text-white"
-                  : "text-muted-foreground hover:text-white"
+            <div key={group.label}>
+              {idx > 0 && <div className="mx-2 my-2 border-t border-sidebar-border" />}
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                className="flex w-full items-center gap-1 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-colors"
+              >
+                <ChevronRight className={cn("h-3 w-3 transition-transform", !isCollapsed && "rotate-90")} />
+                {group.label}
+              </button>
+              {!isCollapsed && (
+                <div className="mt-0.5 space-y-0.5">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onNavigate}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                        isActive(item.href)
+                          ? "bg-sidebar-accent font-medium text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
               )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-md bg-white/[0.05] border border-border"
-                  transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                />
-              )}
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-bar"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-sm bg-primary"
-                  transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                />
-              )}
-              <item.icon className={cn(
-                "h-4 w-4 relative z-10 transition-colors",
-                isActive ? "text-primary" : "group-hover:text-white"
-              )} />
-              <span className="relative z-10">{item.label}</span>
-            </Link>
+            </div>
           );
         })}
-
-        <div className="mb-3 mt-8 px-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">
-          Account
-        </div>
-        {navItems.slice(4).map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-all duration-200",
-                isActive
-                  ? "text-white bg-white/[0.05] border border-border"
-                  : "text-muted-foreground hover:text-white"
-              )}
-            >
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-sm bg-primary" />
-              )}
-              <item.icon className={cn("h-4 w-4", isActive && "text-primary")} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Bottom card */}
-      <div className="border-t border-border p-4">
-        <div className="rounded-lg border border-border bg-white/[0.02] p-3.5 corner-dots">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-mono text-[10px] text-primary">PRO PLAN</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mb-2.5">
-            10,000 predictions/mo
-          </p>
-          <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              initial={{ width: 0 }}
-              animate={{ width: "72%" }}
-              transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
-            />
-          </div>
-          <p className="font-mono text-[10px] text-muted-foreground mt-1.5">7,200 / 10,000</p>
-        </div>
       </div>
-    </aside>
+    </nav>
   );
 }

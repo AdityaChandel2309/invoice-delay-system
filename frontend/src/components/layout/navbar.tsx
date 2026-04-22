@@ -1,46 +1,44 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Search, Menu, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Sidebar } from "./sidebar";
 
-export function Navbar() {
+export function Header() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-black px-6">
-      {/* Search */}
-      <div className="relative w-80 group">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
-        <Input
-          placeholder="Search invoices, customers…"
-          className="pl-10 h-9 text-sm"
-        />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 items-center rounded border border-border bg-white/[0.03] px-1.5 font-mono text-[10px] text-muted-foreground/40">
+    <header className="flex h-16 items-center gap-3 border-b border-border bg-card px-4 shadow-sm md:px-8">
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+        <Menu className="h-5 w-5" />
+      </Button>
+
+      <button
+        type="button"
+        className="flex h-9 flex-1 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 md:max-w-sm"
+      >
+        <Search className="h-4 w-4 shrink-0" />
+        <span>Search invoices, customers…</span>
+        <kbd className="ml-auto hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
           ⌘K
         </kbd>
-      </div>
+      </button>
 
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        <button className="relative rounded-md p-2 text-muted-foreground hover:bg-white/[0.04] hover:text-white transition-all">
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-          </span>
-        </button>
+      <button type="button" className="flex items-center gap-1.5 rounded-full pl-1 pr-2 py-1 hover:bg-muted transition-colors ml-auto">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+          AC
+        </div>
+        <span className="hidden text-sm font-medium md:inline-block">Aditya C.</span>
+      </button>
 
-        <button className="flex items-center gap-2.5 rounded-md py-1.5 px-2.5 hover:bg-white/[0.04] transition-all group">
-          <div className="relative">
-            <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center text-[10px] font-bold text-white">
-              AC
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-black" />
-          </div>
-          <div className="hidden md:block text-left">
-            <div className="text-sm font-medium leading-tight">Aditya C.</div>
-            <div className="font-mono text-[10px] text-muted-foreground">Admin</div>
-          </div>
-        </button>
-      </div>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-[260px] p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <Sidebar onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }
