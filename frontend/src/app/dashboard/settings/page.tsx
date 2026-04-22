@@ -6,25 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { User, Bell, Palette, Shield, Save } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+function Toggle({ defaultChecked = false }: { defaultChecked?: boolean }) {
+  const [on, setOn] = useState(defaultChecked);
+  return (
+    <button onClick={() => setOn(!on)} className={`relative w-10 h-[22px] rounded-full transition-colors duration-300 ${on ? "bg-primary" : "bg-white/[0.08]"}`}>
+      <motion.div className="absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white shadow-sm" animate={{ x: on ? 18 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
+    </button>
+  );
+}
 
 export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your account and application preferences.</p>
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground/60 mt-0.5">Manage your account and application preferences.</p>
       </div>
 
-      {/* Profile */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Profile</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2 tracking-tight"><User className="h-4 w-4 text-primary" /> Profile</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4 mb-4">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-xl font-bold text-white">AC</div>
-            <div><Button variant="outline" size="sm">Change Avatar</Button></div>
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-[#38bdf8] flex items-center justify-center text-xl font-bold text-white ring-2 ring-background">AC</div>
+            <Button variant="outline" size="sm">Change Avatar</Button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className="text-sm font-medium mb-1.5 block">First Name</label><Input defaultValue="Aditya" /></div>
@@ -35,9 +44,8 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Notifications */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4 text-primary" /> Notifications</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2 tracking-tight"><Bell className="h-4 w-4 text-primary" /> Notifications</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {[
             { label: "Email alerts for high-risk predictions", defaultChecked: true },
@@ -45,29 +53,25 @@ export default function SettingsPage() {
             { label: "New overdue invoice notifications", defaultChecked: false },
             { label: "Model performance updates", defaultChecked: false },
           ].map((n) => (
-            <label key={n.label} className="flex items-center justify-between py-1">
-              <span className="text-sm">{n.label}</span>
-              <div className="relative">
-                <input type="checkbox" defaultChecked={n.defaultChecked} className="sr-only peer" />
-                <div className="w-9 h-5 rounded-full bg-zinc-700 peer-checked:bg-primary transition-colors cursor-pointer after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
-              </div>
-            </label>
+            <div key={n.label} className="flex items-center justify-between py-1">
+              <span className="text-sm text-muted-foreground/70">{n.label}</span>
+              <Toggle defaultChecked={n.defaultChecked} />
+            </div>
           ))}
         </CardContent>
       </Card>
 
-      {/* Theme */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Palette className="h-4 w-4 text-primary" /> Appearance</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2 tracking-tight"><Palette className="h-4 w-4 text-primary" /> Appearance</CardTitle></CardHeader>
         <CardContent>
           <div className="flex gap-3">
             {[
-              { label: "Dark", active: true, bg: "bg-zinc-900" },
+              { label: "Dark", active: true, bg: "bg-[#0a0a0c]" },
               { label: "Light", active: false, bg: "bg-white" },
-              { label: "System", active: false, bg: "bg-gradient-to-r from-zinc-900 to-white" },
+              { label: "System", active: false, bg: "bg-gradient-to-r from-[#0a0a0c] to-white" },
             ].map((t) => (
-              <button key={t.label} className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${t.active ? "border-primary bg-primary/5" : "border-border hover:border-zinc-700"}`}>
-                <div className={`w-16 h-10 rounded-md ${t.bg} border border-border`} />
+              <button key={t.label} className={`flex flex-col items-center gap-2.5 p-3.5 rounded-xl border transition-all duration-200 ${t.active ? "border-primary/30 bg-primary/[0.04]" : "border-border hover:border-border-hover"}`}>
+                <div className={`w-16 h-10 rounded-lg ${t.bg} border border-border`} />
                 <span className="text-xs font-medium">{t.label}</span>
                 {t.active && <Badge>Active</Badge>}
               </button>
@@ -76,9 +80,8 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Security */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Security</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2 tracking-tight"><Shield className="h-4 w-4 text-primary" /> Security</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div><label className="text-sm font-medium mb-1.5 block">Current Password</label><Input type="password" placeholder="••••••••" /></div>
           <div><label className="text-sm font-medium mb-1.5 block">New Password</label><Input type="password" placeholder="Min 8 characters" /></div>
@@ -88,7 +91,13 @@ export default function SettingsPage() {
 
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} className="gap-2"><Save className="h-4 w-4" /> Save Changes</Button>
-        {saved && <span className="text-sm text-emerald-400 animate-pulse">✓ Changes saved!</span>}
+        <AnimatePresence>
+          {saved && (
+            <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="text-sm text-emerald-400">
+              ✓ Changes saved!
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ services:
       - ./sql/003_create_views.sql:/docker-entrypoint-initdb.d/003_create_views.sql:ro,Z
       - ./sql/004_create_indexes.sql:/docker-entrypoint-initdb.d/004_create_indexes.sql:ro,Z
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://backend:8000/api/v1
     depends_on:

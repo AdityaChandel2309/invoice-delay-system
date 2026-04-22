@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Brain, Zap, TrendingUp, AlertTriangle, CheckCircle2, BarChart3 } from "lucide-react";
+import { CircularGauge } from "@/components/ui/circular-gauge";
+import { Brain, Zap, AlertTriangle, CheckCircle2, BarChart3 } from "lucide-react";
 
 interface PredResult {
   willBeDelayed: boolean;
@@ -15,6 +16,13 @@ interface PredResult {
   riskTier: string;
   factors: { name: string; impact: number; direction: "up" | "down" }[];
 }
+
+const gaugeColors: Record<string, { from: string; to: string }> = {
+  CRITICAL: { from: "#f43f5e", to: "#ef4444" },
+  HIGH: { from: "#f97316", to: "#f59e0b" },
+  MEDIUM: { from: "#f59e0b", to: "#eab308" },
+  LOW: { from: "#10b981", to: "#38bdf8" },
+};
 
 export default function PredictionsPage() {
   const [form, setForm] = useState({ invoiceAmount: "50000", daysToDue: "30", avgPaymentDays: "35", latePaymentRatio: "0.25", creditLimit: "100000", customerTenureDays: "365", isMonthEnd: false });
@@ -52,15 +60,15 @@ export default function PredictionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Predict Delay</h1>
-        <p className="text-sm text-muted-foreground">Enter invoice and customer details to get an AI-powered delay prediction.</p>
+        <h1 className="text-2xl font-bold tracking-tight">Predict Delay</h1>
+        <p className="text-sm text-muted-foreground/60 mt-0.5">Enter invoice and customer details to get an AI-powered delay prediction.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Input Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Brain className="h-4 w-4 text-primary" /> Prediction Input</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2 tracking-tight"><Brain className="h-4 w-4 text-primary" /> Prediction Input</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -71,12 +79,25 @@ export default function PredictionsPage() {
               <div><label className="text-sm font-medium mb-1.5 block">Credit Limit ($)</label><Input type="number" value={form.creditLimit} onChange={(e) => setForm({ ...form, creditLimit: e.target.value })} /></div>
               <div><label className="text-sm font-medium mb-1.5 block">Customer Tenure (days)</label><Input type="number" value={form.customerTenureDays} onChange={(e) => setForm({ ...form, customerTenureDays: e.target.value })} /></div>
             </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.isMonthEnd} onChange={(e) => setForm({ ...form, isMonthEnd: e.target.checked })} className="rounded border-zinc-700" />
+            <label className="flex items-center gap-2.5 text-sm text-muted-foreground/70">
+              <input type="checkbox" checked={form.isMonthEnd} onChange={(e) => setForm({ ...form, isMonthEnd: e.target.checked })} className="rounded border-border bg-white/[0.02] accent-primary" />
               Invoice issued at month-end
             </label>
             <Button onClick={handlePredict} className="w-full gap-2" size="lg" disabled={loading}>
-              {loading ? <><div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing…</> : <><Zap className="h-4 w-4" /> Run Prediction</>}
+              {loading ? (
+                <>
+                  {/* Neural network loading animation */}
+                  <div className="relative h-5 w-5">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                    </div>
+                    <div className="absolute inset-0 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  </div>
+                  Analyzing…
+                </>
+              ) : (
+                <><Zap className="h-4 w-4" /> Run Prediction</>
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -84,63 +105,68 @@ export default function PredictionsPage() {
         {/* Result */}
         <AnimatePresence mode="wait">
           {result ? (
-            <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-              <Card className={`${result.willBeDelayed ? "border-red-500/30 glow-danger" : "border-emerald-500/30 glow-success"}`}>
+            <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ ease: "easeOut" }}>
+              <Card className={`${result.willBeDelayed ? "glow-danger" : "glow-success"}`}>
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    {result.willBeDelayed ? <AlertTriangle className="h-4 w-4 text-red-400" /> : <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
+                  <CardTitle className="text-base flex items-center gap-2 tracking-tight">
+                    {result.willBeDelayed ? <AlertTriangle className="h-4 w-4 text-rose-400" /> : <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
                     Prediction Result
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Main Result */}
-                  <div className="text-center py-4">
-                    <div className={`text-5xl font-bold font-mono mb-2 ${result.willBeDelayed ? "text-red-400" : "text-emerald-400"}`}>
-                      {(result.probability * 100).toFixed(1)}%
-                    </div>
-                    <div className="text-sm text-muted-foreground">Delay Probability</div>
-                    <Badge variant={result.riskTier.toLowerCase() as "critical" | "high" | "medium" | "low"} className="mt-2">{result.riskTier} RISK</Badge>
+                  {/* Circular Gauge */}
+                  <div className="flex justify-center py-2">
+                    <CircularGauge
+                      value={result.probability}
+                      size={160}
+                      strokeWidth={10}
+                      colorFrom={gaugeColors[result.riskTier]?.from || "#7c5cfc"}
+                      colorTo={gaugeColors[result.riskTier]?.to || "#38bdf8"}
+                      id="prediction-gauge"
+                    >
+                      <div className="text-center">
+                        <div className={`text-3xl font-bold font-mono tabular-nums ${result.willBeDelayed ? "text-rose-400" : "text-emerald-400"}`}>
+                          {(result.probability * 100).toFixed(1)}%
+                        </div>
+                        <div className="text-[10px] text-muted-foreground/40 mt-0.5">Delay Probability</div>
+                      </div>
+                    </CircularGauge>
                   </div>
 
-                  {/* Gauge Bar */}
-                  <div>
-                    <div className="h-3 rounded-full bg-zinc-800 overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${result.probability * 100}%` }} transition={{ duration: 1, ease: "easeOut" }}
-                        className={`h-3 rounded-full ${result.probability >= 0.7 ? "bg-gradient-to-r from-orange-500 to-red-500" : result.probability >= 0.4 ? "bg-gradient-to-r from-yellow-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-green-500"}`}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                      <span>Low Risk</span><span>High Risk</span>
-                    </div>
+                  <div className="flex justify-center">
+                    <Badge variant={result.riskTier.toLowerCase() as "critical" | "high" | "medium" | "low"}>{result.riskTier} RISK</Badge>
                   </div>
 
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-zinc-900 p-3 text-center">
-                      <div className="text-xl font-bold">{result.predictedDays}d</div>
-                      <div className="text-xs text-muted-foreground">Predicted Delay</div>
+                    <div className="rounded-xl bg-white/[0.02] border border-border p-3.5 text-center">
+                      <div className="text-xl font-bold tabular-nums">{result.predictedDays}d</div>
+                      <div className="text-[10px] text-muted-foreground/40">Predicted Delay</div>
                     </div>
-                    <div className="rounded-lg bg-zinc-900 p-3 text-center">
+                    <div className="rounded-xl bg-white/[0.02] border border-border p-3.5 text-center">
                       <div className="text-xl font-bold">{result.willBeDelayed ? "Yes" : "No"}</div>
-                      <div className="text-xs text-muted-foreground">Will Be Delayed</div>
+                      <div className="text-[10px] text-muted-foreground/40">Will Be Delayed</div>
                     </div>
                   </div>
 
                   {/* Factor Importance */}
                   <div>
-                    <div className="text-sm font-medium mb-3 flex items-center gap-1.5"><BarChart3 className="h-4 w-4 text-primary" /> Factor Importance</div>
-                    <div className="space-y-2">
+                    <div className="text-sm font-medium mb-3.5 flex items-center gap-1.5"><BarChart3 className="h-4 w-4 text-primary" /> Factor Importance</div>
+                    <div className="space-y-3">
                       {result.factors.map((f) => (
                         <div key={f.name}>
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">{f.name}</span>
-                            <span className={f.direction === "up" ? "text-red-400" : "text-emerald-400"}>
+                          <div className="flex items-center justify-between text-xs mb-1.5">
+                            <span className="text-muted-foreground/50">{f.name}</span>
+                            <span className={`font-mono tabular-nums ${f.direction === "up" ? "text-rose-400/80" : "text-emerald-400/80"}`}>
                               {f.direction === "up" ? "↑" : "↓"} {(f.impact * 100).toFixed(1)}%
                             </span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-zinc-800">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(f.impact * 200, 100)}%` }} transition={{ duration: 0.8 }}
-                              className={`h-1.5 rounded-full ${f.direction === "up" ? "bg-red-500/70" : "bg-emerald-500/70"}`}
+                          <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(f.impact * 200, 100)}%` }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                              className={`h-full rounded-full ${f.direction === "up" ? "bg-gradient-to-r from-rose-500/50 to-rose-500/70" : "bg-gradient-to-r from-emerald-500/50 to-emerald-500/70"}`}
                             />
                           </div>
                         </div>
@@ -154,9 +180,15 @@ export default function PredictionsPage() {
             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Card className="h-full flex items-center justify-center">
                 <CardContent className="text-center py-16">
-                  <Brain className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                  <div className="relative mx-auto mb-5 w-16 h-16">
+                    <div className="absolute inset-0 rounded-full bg-primary/[0.04]" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Brain className="h-8 w-8 text-muted-foreground/20" />
+                    </div>
+                    <div className="absolute inset-0 rounded-full border border-dashed border-primary/10 animate-spin-slow" />
+                  </div>
                   <h3 className="text-lg font-medium mb-1">No prediction yet</h3>
-                  <p className="text-sm text-muted-foreground">Fill in the form and click &quot;Run Prediction&quot; to get AI-powered delay analysis.</p>
+                  <p className="text-sm text-muted-foreground/50">Fill in the form and click &quot;Run Prediction&quot; to get AI-powered delay analysis.</p>
                 </CardContent>
               </Card>
             </motion.div>
